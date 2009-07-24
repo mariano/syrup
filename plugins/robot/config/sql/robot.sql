@@ -9,7 +9,7 @@ CREATE TABLE `robot_task_actions`(
 
 CREATE TABLE `robot_tasks`(
     `id` CHAR(36) NOT NULL,
-    `robot_task_action_id` CHAR(36) NOT NULL
+    `robot_task_action_id` CHAR(36) NOT NULL,
     `status` VARCHAR(255) NOT NULL default 'pending',
     `parameters` TEXT default NULL,
     `scheduled` DATETIME NOT NULL,
