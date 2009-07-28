@@ -5,16 +5,20 @@ App::import('Core', 'Dispatcher');
 class RobotShell extends Shell {
 	public $Dispatcher;
 	public $actions = array(
-		'run'
+		'run',
+		''
 	);
-	public $options = array(
-		'daemon' => null,
-		'debug' => false,
-		'result' => false,
-		'tasks' => null,
-		'time' => null,
-		'url' => null,
-		'wait' => 1000
+	public $options = array();
+	public $defaults = array(
+		'run' => array(
+			'daemon' => null,
+			'silent' => false,
+			'result' => false,
+			'tasks' => null,
+			'time' => null,
+			'url' => null,
+			'wait' => 1000
+		)
 	);
 	public $uses = array('Robot.RobotTask');
 
@@ -23,24 +27,26 @@ class RobotShell extends Shell {
 			return $this->help();
 		}
 
+		$action = array_shift($this->args);
+
 		if (!empty($this->params)) {
-			$this->options = array_merge($this->options, array_intersect_key($this->params, $this->options));
-			foreach(array('debug', 'result') as $booleanParameter) {
-				$this->options[$booleanParameter] = (!empty($this->options[$booleanParameter]));
+			if (!empty($this->defaults[$action])) {
+				$this->options = array_merge($this->options, $this->defaults[$action]);
 			}
+			$this->options = array_merge($this->options, array_intersect_key($this->params, $this->options));
 		}
 
-		foreach($this->actions as $i => $action) {
+		foreach($this->actions as $i => $currentAction) {
 			if (!is_string($i)) {
-				$method = '_' . $action;
+				$method = '_' . $currentAction;
 				unset($this->actions[$i]);
-				$this->actions[$action] = $method;
+				$this->actions[$currentAction] = $method;
 			} else {
-				$method = $action;
-				$action = $i;
+				$method = $currentAction;
+				$currentAction = $i;
 			}
 			if (!is_callable(array($this, $method))) {
-				unset($this->actions[$action]);
+				unset($this->actions[$currentAction]);
 			}
 		}
 
@@ -48,7 +54,7 @@ class RobotShell extends Shell {
 			return $this->help('No callable actions found');
 		}
 
-		if (!in_array($this->args[0], array_keys($this->actions))) {
+		if (!in_array($action, array_keys($this->actions))) {
 			return $this->help('Invalid action "' . $this->args[0] . '" specified');
 		}
 
@@ -71,9 +77,8 @@ class RobotShell extends Shell {
 		}
 
 		$this->Dispatcher = new Dispatcher();
-		$action = array_shift($this->args);
 
-		$this->_welcome($action);
+		$this->_welcome($action, true);
 
 		foreach(array('tasks', 'time') as $parameter) {
 			if (!empty($this->options[$parameter])) {
@@ -87,7 +92,7 @@ class RobotShell extends Shell {
 
 		$this->{$this->actions[$action]}($this->args);
 
-		if ($this->options['debug']) {
+		if (empty($this->options['silent'])) {
 			$endTime = microtime(true);
 			$this->__output();
 			$this->__output('TOTAL TIME: ' . number_format(($endTime - $startTime) * 1000, 2) . ' ms.');
@@ -159,7 +164,7 @@ class RobotShell extends Shell {
 		$endTime = microtime(true);
 		$this->__output(($result !== false ? 'DONE' : 'FAILED') . ' (' . number_format(($endTime - $startTime) * 1000, 2) . ' ms.)', true, false);
 
-		if ($this->options['result']) {
+		if (!empty($this->options['result'])) {
 			if (is_string($result)) {
 				$lines = split("\n", $result);
 				foreach($lines as $i => $line) {
@@ -184,29 +189,29 @@ class RobotShell extends Shell {
 	}
 
 	private function __output($message = '', $newLine = true, $time = true, $force = false) {
-		if ($this->options['debug'] || $force) {
+		if (empty($this->options['silent']) || $force) {
 			$this->out(($time ? '[' . date('m/d/Y H:i:s') . '] ' : '') . $message, $newLine);
 		}
 	}
 
-	public function _welcome($action = null, $force = false, $time = true) {
-		if ($this->options['debug'] || $force) {
-			$this->__hr($time, $force);
-			$this->__output('Robot Runner v1.3 - A CakePHP shell based task runner', true, $time, $force);
-			$this->__hr($time, $force);
+	public function _welcome($action = null, $show = false, $time = true) {
+		if ($show) {
+			$this->__hr($time, $show);
+			$this->__output('Robot Runner v1.3 - A CakePHP shell based task runner', true, $time, $show);
+			$this->__hr($time, $show);
 			if (!empty($action)) {
-				$this->__output('Action: ' . $action, true, $time, $force);
+				$this->__output('Action: ' . $action, true, $time, $show);
 			}
 		}
 	}
 
 	public function help($error = null) {
 		$help = array(
-			'Usage: ./cake robot <run [/cake/action]> [-daemon [force] | -debug | -result | -tasks N | -time N | -url value | -wait N]',
+			'Usage: ./cake robot <run [/cake/action]> [-daemon [force] | -silent | -result | -tasks N | -time N | -url value | -wait N]',
 			'',
 			'where:',
 			'-daemon [force]		If no tasks, keep waiting for tasks. Set force to force daemon (if no -tasks or -time specified)',
-			'-debug			Show debug info',
+			'-silent			Do not show debug info',
 			'-result			Show resulting values when calling CakePHP actions (usable only if -debug set)',
 			'-tasks N		Do not process more than N tasks',
 			'-time N			Stop if processing is over N seconds',
