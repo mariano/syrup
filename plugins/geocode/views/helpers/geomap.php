@@ -1,5 +1,5 @@
 <?php
-class GeomapHelper extends Helper {
+class GeomapHelper extends AppHelper {
 	/**
 	 * Helpers
 	 *
