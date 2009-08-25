@@ -40,7 +40,15 @@ class GeomapHelper extends AppHelper {
 			'width' => 500,
 			'height' => 300,
 			'zoom' => 10,
-			'div' => array()
+			'div' => array(),
+			'type' => 'street',
+			'layout' => array(
+				'pan',
+				'panAndZoom',
+				'scale',
+				'types',
+				'zoom'
+			)
 		), $parameters);
 
 		if (empty($parameters['service'])) {
@@ -114,10 +122,26 @@ class GeomapHelper extends AppHelper {
 	 * @access public
 	 */
 	protected function _google($id, $center, $markers, $parameters) {
+		$varName = 'm' . $id;
+		$mapTypes = array(
+			'street' => 'G_NORMAL_MAP',
+			'satellite' => 'G_SATELLITE_MAP',
+			'hybrid' => 'G_HYBRID_MAP'
+		);
+		$layouts = array(
+			'elements' => array(
+				'panAndZoom' => '${var}.addControl(new google.maps.LargeMapControl3D())',
+				'scale' => '${var}.addControl(new google.maps.ScaleControl())',
+				'types' => '${var}.addControl(new google.maps.MapTypeControl())',
+				'zoom' => '${var}.addControl(new google.maps.SmallZoomControl3D())'
+			)
+		);
+
 		$script = '
+			var ' . $varName . ' = null;
 			google.load("maps", "2");
 			google.setOnLoadCallback(function () {
-				if (!GBrowserIsCompatible()) {
+				if (!google.maps.BrowserIsCompatible()) {
 					return false;
 				}
 				var mapOptions = {};
@@ -130,15 +154,17 @@ class GeomapHelper extends AppHelper {
 		}
 
 		$script .= '
-				var map = new google.maps.Map2(document.getElementById("' . $id . '"), mapOptions);
+				' . $varName . ' = new google.maps.Map2(document.getElementById("' . $id . '"), mapOptions);
+				' . $varName . '.setMapType(' . $mapTypes[$parameters['type']] . ');
 		';
 
 		if (!empty($center)) {
 			list($latitude, $longitude) = $center;
-			$script .= 'map.setCenter(
-				new google.maps.LatLng(' . $latitude . ', ' .	$longitude . ')' .
-				(!empty($parameters['zoom']) ? ', ' . $parameters['zoom'] : '') .
-			');';
+			$script .= $varName . '.setCenter(new google.maps.LatLng(' . $latitude . ', ' .	$longitude . '));' . "\n";
+		}
+
+		if (!empty($parameters['zoom'])) {
+			$script .= $varName . '.setZoom(' . $parameters['zoom'] . ');' . "\n";
 		}
 
 		if (!empty($markers)) {
@@ -167,16 +193,32 @@ class GeomapHelper extends AppHelper {
 					';
 				}
 
-				$script .= '
-					map.addOverlay(marker);
-				';
+				$script .= $varName . '.addOverlay(marker);' . "\n";
 			}
 		}
 
-		$script .= '
-				map.setUIToDefault();
-			});
-		';
+		if (!empty($parameters['layout'])) {
+			foreach($parameters['layout'] as $element => $enabled) {
+				unset($parameters['layout'][$element]);
+				if (is_numeric($element)) {
+					$element = $enabled;
+					$enabled = true;
+				}
+				$parameters['layout'][$element] = $enabled;
+			}
+
+			if (!empty($parameters['layout']['panAndZoom']) && !empty($parameters['layout']['zoom'])) {
+				$parameters['layout']['zoom'] = false;
+			}
+
+			foreach($parameters['layout'] as $element => $enabled) {
+				if ($enabled && !empty($layouts['elements'][$element])) {
+					$script .= str_replace('${var}', $varName, $layouts['elements'][$element]) . ';' . "\n";
+				}
+			}
+		}
+
+		$script .= '});';
 
 		return $this->Javascript->codeBlock($script);
 	}
@@ -193,11 +235,25 @@ class GeomapHelper extends AppHelper {
 	 */
 	protected function _yahoo($id, $center, $markers, $parameters) {
 		$varName = 'm' . $id;
+		$mapTypes = array(
+			'street' => 'YAHOO_MAP_REG',
+			'satellite' => 'YAHOO_MAP_SAT',
+			'hybrid' => 'YAHOO_MAP_HYB'
+		);
+		$layouts = array(
+			'elements' => array(
+				'pan' => '${var}.addPanControl()',
+				'scale' => '${var}.addZoomScale()',
+				'types' => '${var}.addTypeControl()',
+				'zoom' => '${var}.addZoomLong()'
+			)
+		);
+
 		$script = '
 			var ' . $varName . ' = new YMap(document.getElementById("' . $id . '"));
 		';
 
-		$script .= $varName . '.setMapType(YAHOO_MAP_REG);' . "\n";
+		$script .= $varName . '.setMapType(' . $mapTypes[$parameters['type']] . ');' . "\n";
 
 		if (!empty($center)) {
 			list($latitude, $longitude) = $center;
@@ -210,6 +266,25 @@ class GeomapHelper extends AppHelper {
 
 		if (!empty($parameters['zoom'])) {
 			$script .= $varName . '.setZoomLevel(' . $parameters['zoom'] . ');' . "\n";
+		}
+
+		$script .= $varName . '.removeZoomScale();' . "\n";
+
+		if (!empty($parameters['layout'])) {
+			foreach($parameters['layout'] as $element => $enabled) {
+				unset($parameters['layout'][$element]);
+				if (is_numeric($element)) {
+					$element = $enabled;
+					$enabled = true;
+				}
+				$parameters['layout'][$element] = $enabled;
+			}
+
+			foreach($parameters['layout'] as $element => $enabled) {
+				if ($enabled && !empty($layouts['elements'][$element])) {
+					$script .= str_replace('${var}', $varName, $layouts['elements'][$element]) . ';' . "\n";
+				}
+			}
 		}
 
 		if (!empty($markers)) {
