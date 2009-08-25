@@ -182,7 +182,7 @@ class GeomapHelper extends AppHelper {
 				$markerOptions = !empty($markerOptions) ? $this->Javascript->object($markerOptions) : '{}';
 				list($latitude, $longitude) = $marker['point'];
 				$script .= '
-					marker = new google.maps.Marker(new google.maps.LatLng(' . $latitude . ', ' . $longitude . ', ' . $markerOptions . '));
+					marker = new google.maps.Marker(new google.maps.LatLng(' . $latitude . ', ' . $longitude . '), ' . $markerOptions . ');
 				';
 
 				if (!empty($content)) {
