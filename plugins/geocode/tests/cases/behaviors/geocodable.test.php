@@ -146,8 +146,14 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$this->assertFalse($result);
 
 		$result = $this->Address->geocode($address);
-		$expected = array(37.4219165, -122.0780632);
-		$this->assertEqual($result, $expected);
+		$this->assertTrue(!empty($result));
+		if (!empty($result)) {
+			foreach($result as $i => $value) {
+				$result[$i] = round($value, 2);
+			}
+			$expected = array(37.42, -122.08);
+			$this->assertEqual($result, $expected);
+		}
 
 		$result = $this->Address->find('first', array(
 			'conditions' => $address,
@@ -157,11 +163,17 @@ class GeocodableBehaviorTest extends CakeTestCase {
 				array('latitude', 'longitude')
 			)
 		));
-		$expected = array($this->Address->alias => array_merge(
-			$address,
-			array('latitude' => 37.4219, 'longitude' => -122.078)
-		));
-		$this->assertEqual($result, $expected);
+		$this->assertTrue(!empty($result[$this->Address->alias]));
+		if (!empty($result)) {
+			foreach(array('latitude', 'longitude') as $field) {
+				$result[$this->Address->alias][$field] = round($result[$this->Address->alias][$field], 2);
+			}
+			$expected = array($this->Address->alias => array_merge(
+				$address,
+				array('latitude' => 37.42, 'longitude' => -122.08)
+			));
+			$this->assertEqual($result, $expected);
+		}
 	}
 
 	public function testDistance() {
@@ -209,6 +221,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 
 		$result = round($this->Address->distance($origin, array(
 			'address1' => '9106 El Portal Dr',
+			'city' => 'Tampa',
 			'state' => 'Florida',
 			'country' => 'US'
 		), 'm'), 1);
@@ -216,7 +229,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 
 		if (!$this->skipIf(empty($this->Geocodable->settings[$this->Address->alias]['key']), 'No service API Key provided')) {
-			$result = round($this->Address->distance($origin, '3700 Rocinante Blvd, FL', 'm'), 1);
+			$result = round($this->Address->distance($origin, '3700 Rocinante Blvd, Tampa, FL', 'm'), 1);
 			$expected = 3.4;
 			$this->assertEqual($result, $expected);
 		}
@@ -307,12 +320,12 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$this->assertTrue(!empty($result));
 		if (!empty($result)) {
 			foreach(array('latitude', 'longitude') as $field) {
-				$result[$this->Address->alias][$field] = round($result[$this->Address->alias][$field], 4);
+				$result[$this->Address->alias][$field] = round($result[$this->Address->alias][$field], 2);
 			}
 
 			$expected = array_merge($address, array(
-				'latitude' => 37.4219,
-				'longitude' => -122.078
+				'latitude' => 37.42,
+				'longitude' => -122.08
 			));
 
 			$this->assertEqual($result[$this->Address->alias], $expected);
