@@ -8,8 +8,23 @@ class RobotTask extends AppModel {
 	 * @access public
 	 */
 	public $belongsTo = array('Robot.RobotTaskAction');
+
+	/**
+	 * Fields to be compressed. Can be overriden with configure variable Robot.compress
+	 *
+	 * @var array
+	 * @access private
+	 */
 	private $compress = array('parameters');
 
+	/**
+	 * Called before each save operation, after validation. Return a non-true result
+	 * to halt the save.
+	 *
+	 * @return boolean True if the operation should continue, false if it should abort
+	 * @access public
+	 * @link http://book.cakephp.org/view/683/beforeSave
+	 */
 	public function beforeSave(){
 		$fields = Configure::read('Robot.compress');
 		if (is_null($fields)) {
@@ -30,6 +45,13 @@ class RobotTask extends AppModel {
 		return $return;
 	}
 
+	/**
+	 * Called after each successful save operation.
+	 *
+	 * @param boolean $created True if this save created a new record
+	 * @access public
+	 * @link http://book.cakephp.org/view/684/afterSave
+	 */
 	public function afterSave($created){
 		$fields = Configure::read('Robot.compress');
 		if (is_null($fields)) {
@@ -50,6 +72,16 @@ class RobotTask extends AppModel {
 		return $return;
 	}
 
+	/**
+	 * Called after each find operation. Can be used to modify any results returned by find().
+	 * Return value should be the (modified) results.
+	 *
+	 * @param mixed $results The results of the find operation
+	 * @param boolean $primary Whether this model is being queried directly (vs. being queried as an association)
+	 * @return mixed Result of the find operation
+	 * @access public
+	 * @link http://book.cakephp.org/view/681/afterFind
+	 */
 	public function afterFind(&$results, $primary) {
 		$fields = Configure::read('Robot.compress');
 		if (is_null($fields)) {
