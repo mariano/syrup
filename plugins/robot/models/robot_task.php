@@ -89,7 +89,9 @@ class RobotTask extends AppModel {
 		}
 
 		$return = parent::afterFind($results, $primary);
-		if (is_array($return) || empty($fields)) {
+		if (empty($fields)) {
+			return $return;
+		} else if (is_array($return)) {
 			$results = $return;
 		}
 
