@@ -17,6 +17,10 @@ class RobotTaskAction extends AppModel {
 	 * @access public
 	 */
 	public function action($action) {
+		if (is_array($action)) {
+			$action = Router::url($action);
+		}
+
 		$conditions = array();
 		if (is_numeric($action)) {
 			$conditions[$this->alias . '.' . $this->primaryKey] = $action;
