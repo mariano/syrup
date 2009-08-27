@@ -15,7 +15,7 @@ class RobotTask extends AppModel {
 	 * @var array
 	 * @access private
 	 */
-	private $compress = array('parameters');
+	private $compress = array();
 
 	/**
 	 * Called before each save operation, after validation. Return a non-true result
