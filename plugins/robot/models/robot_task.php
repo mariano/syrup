@@ -18,91 +18,21 @@ class RobotTask extends AppModel {
 	private $compress = array();
 
 	/**
-	 * Called before each save operation, after validation. Return a non-true result
-	 * to halt the save.
+	 * Constructor. Binds the model's database table to the object.
 	 *
-	 * @return boolean True if the operation should continue, false if it should abort
-	 * @access public
-	 * @link http://book.cakephp.org/view/683/beforeSave
+	 * @param integer $id Set this ID for this model on startup
+	 * @param string $table Name of database table to use.
+	 * @param object $ds DataSource connection object.
 	 */
-	public function beforeSave(){
-		$fields = Configure::read('Robot.compress');
-		if (is_null($fields)) {
-			$fields = $this->compress;
+	public function __construct($id = false, $table = null, $ds = null) {
+		parent::__construct($id, $table, $ds);
+		$compress = Configure::read('Robot.compress');
+		if (is_null($compress)) {
+			$compress = $this->compress;
 		}
-
-		$return = parent::beforeSave();
-		if ($return === false || empty($fields)) {
-			return $return;
+		if (!empty($compress) && App::import('Behavior', 'Syrup.Compressible')) {
+			$this->Behaviors->attach('Syrup.Compressible', $compress);
 		}
-
-		foreach ((array) $fields as $field) {
-			if (isset($this->data[$this->alias][$field])) {
-				$this->data[$this->alias][$field] = $this->compress($this->data[$this->alias][$field]);
-			}
-		}
-
-		return $return;
-	}
-
-	/**
-	 * Called after each successful save operation.
-	 *
-	 * @param boolean $created True if this save created a new record
-	 * @access public
-	 * @link http://book.cakephp.org/view/684/afterSave
-	 */
-	public function afterSave($created){
-		$fields = Configure::read('Robot.compress');
-		if (is_null($fields)) {
-			$fields = $this->compress;
-		}
-
-		$return = parent::afterSave($created);
-		if (empty($fields)) {
-			return $return;
-		}
-
-		foreach ((array) $fields as $field) {
-			if (isset($this->data[$this->alias][$field])) {
-				$this->data[$this->alias][$field] = $this->uncompress($this->data[$this->alias][$field]);
-			}
-		}
-
-		return $return;
-	}
-
-	/**
-	 * Called after each find operation. Can be used to modify any results returned by find().
-	 * Return value should be the (modified) results.
-	 *
-	 * @param mixed $results The results of the find operation
-	 * @param boolean $primary Whether this model is being queried directly (vs. being queried as an association)
-	 * @return mixed Result of the find operation
-	 * @access public
-	 * @link http://book.cakephp.org/view/681/afterFind
-	 */
-	public function afterFind(&$results, $primary) {
-		$fields = Configure::read('Robot.compress');
-		if (is_null($fields)) {
-			$fields = $this->compress;
-		}
-
-		$return = parent::afterFind($results, $primary);
-		if (empty($fields)) {
-			return $return;
-		} else if (is_array($return)) {
-			$results = $return;
-		}
-
-		foreach ((array) $fields as $field) {
-			foreach ($results as $i => $record) {
-				if (isset($record[$this->alias][$field])) {
-					$results[$i][$this->alias][$field] = $this->uncompress($record[$this->alias][$field]);
-				}
-			}
-		}
-		return $results;
 	}
 
 	/**
@@ -254,43 +184,5 @@ class RobotTask extends AppModel {
 		}
 		return parent::find($conditions, $fields, $order, $recursive);
 	}
-
-	/**
-	 * Compress data using zlib in a format compatible with MySQL's COMPRESS() function.
-	 *
-	 * @url http://dev.mysql.com/doc/refman/5.0/en/encryption-functions.html#function_compress
-	 * @param $data Data to compress.
-	 * @return string Compressed data
-	 * @access private
-	 */
-	private function compress($data) {
-		if (!empty($data)) {
-			// MySQL requires the compressed data to start with a 32-bit little-endian integer of the original length of the data
-			$data = pack('V', strlen($data)) . gzcompress($data, 9);
-			// If the compressed data ends with a space, MySQL adds a period
-			if (substr($data, -1) == ' ' ) {
-				$data .= '.';
-			}
-		}
-		return $data;
-	}
-
-	/**
-	 * Uncompress data using zlib in from format compatible with MySQL's COMPRESS() function.
-	 *
-	 * @url http://dev.mysql.com/doc/refman/5.0/en/encryption-functions.html#function_compress
-	 * @param $data Data to uncompress.
-	 * @return string Uncompressed data.
-	 * @access private
-	 */
-	private function uncompress($data) {
-		if (!empty($data)) {
-			// MySQL requires the compressed data to start with a 32-bit little-endian integer of the original length of the data
-			$data = @gzuncompress(substr($data, 4));
-		}
-		return $data;
-	}
-
 }
-
 ?>
