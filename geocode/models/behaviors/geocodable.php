@@ -174,12 +174,18 @@ class GeocodableBehavior extends ModelBehavior {
 			}
 			$geocode = $this->geocode($model, $data, false);
 			if (!empty($geocode)) {
-				list(
-					$model->data[$model->alias][$latitudeField],
-					$model->data[$model->alias][$longitudeField]
-				) = $geocode;
+				$address = array();
+				list($address[$latitudeField], $address[$longitudeField]) = $geocode;
+				if (!empty($settings['fields']['address'])) {
+					$address[$settings['fields']['address']] = $this->_address($settings, $data);
+				}
 
-				$this->_addToWhitelist($model, array($latitudeField, $longitudeField));
+				$model->data[$model->alias] = array_merge(
+					$model->data[$model->alias],
+					$address
+				);
+
+				$this->_addToWhitelist($model, array_keys($address));
 			}
 		}
 
@@ -549,7 +555,7 @@ class GeocodableBehavior extends ModelBehavior {
 
 			$record = $$varName->find('first', array(
 				'conditions' => array($$varName->alias . '.' . $$varName->primaryKey => $data[$model['referenceField']]),
-				'contain' => !empty($childModelName) ? $model['model'] : false
+				'contain' => !empty($childModelName) ? preg_replace('/^[^\.]+\.(.+)$/', '\\1', $model['model']) : false
 			));
 			if (empty($record)) {
 				continue;

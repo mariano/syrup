@@ -12,7 +12,7 @@ class TestGeocodableBehavior extends GeocodableBehavior {
 
 class TestAddress extends GeoAddress {
 	public $useDbConfig = 'test_suite';
-	public $actsAs = array('Geo.Geocodable'=>array());
+	public $actsAs = array('Geocode.Geocodable'=>array());
 	public $useTable = 'geo_addresses';
 }
 
@@ -34,7 +34,7 @@ class Country extends AppModel {
 class TestExtendedAddress extends GeoAddress {
 	public $useDbConfig = 'test_suite';
 	public $belongsTo = array('City', 'State');
-	public $actsAs = array('Geo.Geocodable'=>array(
+	public $actsAs = array('Geocode.Geocodable'=>array(
 		'models' => array(
 			'city' => 'City',
 			'state' => 'State',
@@ -52,10 +52,10 @@ class GeocodableBehaviorTest extends CakeTestCase {
 
 	public function startTest($method) {
 		$this->Address = new TestAddress();
-		$this->Address->Behaviors->attach('Geo.Geocodable', $this->Address->actsAs['Geo.Geocodable']);
+		$this->Address->Behaviors->attach('Geocode.Geocodable', $this->Address->actsAs['Geocode.Geocodable']);
 
 		$this->ExtendedAddress = new TestExtendedAddress();
-		$this->ExtendedAddress->Behaviors->attach('Geo.Geocodable', $this->Address->actsAs['Geo.Geocodable']);
+		$this->ExtendedAddress->Behaviors->attach('Geocode.Geocodable', $this->Address->actsAs['Geocode.Geocodable']);
 
 		$this->Geocodable = $this->Address->Behaviors->Geocodable;
 		$this->TestGeocodable = new TestGeocodableBehavior();
@@ -79,7 +79,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 
 		$this->Address->Behaviors->detach('Geocodable');
 		Configure::write('Geocode.service', 'yahoo');
-		$this->Address->Behaviors->attach('Geocodable', $this->Address->actsAs['Geo.Geocodable']);
+		$this->Address->Behaviors->attach('Geocodable', $this->Address->actsAs['Geocode.Geocodable']);
 		$this->assertEqual($this->Geocodable->settings[$this->Address->alias]['service'], 'yahoo');
 
 		$this->Address->Behaviors->detach('Geocodable');
