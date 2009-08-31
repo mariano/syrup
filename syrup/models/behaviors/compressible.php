@@ -5,7 +5,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 *
 	 * @param object $model Model using this behavior
 	 * @param array $config Configuration settings for $model
-	 * @access public
 	 */
 	public function setup($model, $settings = array()) {
 		$this->settings[$model->alias] = $settings;
@@ -16,7 +15,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 *
 	 * @param object $model Model using this behavior
 	 * @return boolean True if the operation should continue, false if it should abort
-	 * @access public
 	 */
 	public function beforeSave($model){
 		$return = parent::beforeSave($model);
@@ -38,7 +36,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 *
 	 * @param object $model Model using this behavior
 	 * @param boolean $created True if this save created a new record
-	 * @access public
 	 */
 	public function afterSave($model, $created){
 		$return = parent::afterSave($model, $created);
@@ -59,7 +56,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 * @param mixed $results The results of the find operation
 	 * @param boolean $primary Whether this model is being queried directly (vs. being queried as an association)
 	 * @return mixed Result of the find operation
-	 * @access public
 	 */
 	public function afterFind($model, $results, $primary) {
 		$return = parent::afterFind($model, $results, $primary);
@@ -84,7 +80,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 * @param object $model Model using this behavior
 	 * @param $data Data to compress.
 	 * @return string Compressed data
-	 * @access private
 	 */
 	public function compress($model, $data) {
 		if (!empty($data)) {
@@ -105,7 +100,6 @@ class CompressibleBehavior extends ModelBehavior {
 	 * @param object $model Model using this behavior
 	 * @param $data Data to uncompress.
 	 * @return string Uncompressed data.
-	 * @access private
 	 */
 	public function uncompress($model, $data) {
 		if (!empty($data)) {

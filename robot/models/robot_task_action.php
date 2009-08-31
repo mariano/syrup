@@ -5,7 +5,6 @@ class RobotTaskAction extends AppModel {
 	 * hasMany bindings
 	 *
 	 * @var array
-	 * @access public
 	 */
 	public $hasMany = array('Robot.RobotTask');
 
@@ -14,7 +13,6 @@ class RobotTaskAction extends AppModel {
 	 *
 	 * @param midex $action Either an ID, or an action (such as /emails/send)
 	 * @return mixed Array of action data, or false
-	 * @access public
 	 */
 	public function action($action) {
 		if (is_array($action)) {

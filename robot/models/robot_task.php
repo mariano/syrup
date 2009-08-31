@@ -5,7 +5,6 @@ class RobotTask extends AppModel {
 	 * belongsTo bindings
 	 *
 	 * @var array
-	 * @access public
 	 */
 	public $belongsTo = array('Robot.RobotTaskAction');
 
@@ -13,7 +12,6 @@ class RobotTask extends AppModel {
 	 * Fields to be compressed. Can be overriden with configure variable Robot.compress
 	 *
 	 * @var array
-	 * @access private
 	 */
 	private $compress = array();
 
@@ -42,7 +40,6 @@ class RobotTask extends AppModel {
 	 * @param array $parameters Extra parameters for the action (received in Controller::$params['robot'])
 	 * @param mixed $scheduled A string to pass to strtotime(), or the time value
 	 * @return mixed Result of save() call
-	 * @access public
 	 */
 	public function schedule($action, $parameters = array(), $scheduled = null) {
 		if (empty($scheduled)) {
@@ -80,7 +77,6 @@ class RobotTask extends AppModel {
 	 *
 	 * @param string $id Task ID
 	 * @return mixed Result of save() call
-	 * @access public
 	 */
 	public function started($id = null) {
 		if (empty($id)) {
@@ -101,7 +97,6 @@ class RobotTask extends AppModel {
 	 *
 	 * @param string $id Task ID
 	 * @return mixed Result of save() call
-	 * @access public
 	 */
 	public function finished($id = null, $success = true) {
 		if (empty($id)) {
@@ -125,7 +120,6 @@ class RobotTask extends AppModel {
 	 * @param string $order SQL ORDER BY conditions (e.g. "price DESC" or "name ASC")
 	 * @param integer $recursive The number of levels deep to fetch associated records
 	 * @return array Array of records
-	 * @access public
 	 */
 	public function find($conditions = null, $fields = array(), $order = null, $recursive = null) {
 		if (is_string($conditions) && $conditions == 'pending') {
