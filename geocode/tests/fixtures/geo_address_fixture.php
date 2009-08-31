@@ -1,6 +1,6 @@
 <?php
-class AddressFixture extends CakeTestFixture {
-	public $name = 'Address';
+class GeoAddressFixture extends CakeTestFixture {
+	public $name = 'GeoAddress';
 	public $fields = array(
 		'id' => array('type' => 'string', 'length' => 36, 'key' => 'primary'),
 		'address' => array('type' => 'string'),

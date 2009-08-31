@@ -1,5 +1,5 @@
 <?php
-class Address extends AppModel {
+class GeoAddress extends AppModel {
 	/**
 	 * Behaviors
 	 *

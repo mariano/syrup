@@ -1,6 +1,6 @@
 <?php
 App::import('Behavior', 'Geocode.Geocodable');
-App::import('Model', 'Geocode.Address');
+App::import('Model', 'Geocode.GeoAddress');
 App::import('Controller', 'Controller');
 
 class TestGeocodableBehavior extends GeocodableBehavior {
@@ -10,16 +10,16 @@ class TestGeocodableBehavior extends GeocodableBehavior {
 	}
 }
 
-class TestAddress extends Address {
+class TestAddress extends GeoAddress {
 	public $useDbConfig = 'test_suite';
-	public $actsAs = array('Geo.Geocodable' => array(
-		'model' => 'TestAddress'
-	));
-	public $useTable = 'addresses';
+	public $actsAs = array('Geo.Geocodable'=>array());
+	public $useTable = 'geo_addresses';
 }
 
 class GeocodableBehaviorTest extends CakeTestCase {
-	public $fixtures = array('plugin.geocode.address');
+	public $fixtures = array(
+		'plugin.geocode.geo_address'
+	);
 
 	public function startTest($method) {
 		$this->Address = new TestAddress();
@@ -44,8 +44,6 @@ class GeocodableBehaviorTest extends CakeTestCase {
 	public function testSettings() {
 		$default = $this->Geocodable->default;
 		$this->assertTrue(!empty($default));
-
-		$default = array_merge($default, array('model' => $this->Address->actsAs['Geo.Geocodable']['model']));
 
 		$this->Address->Behaviors->detach('Geocodable');
 		Configure::write('Geocode.service', 'yahoo');
