@@ -383,11 +383,6 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		$result = $this->ExtendedAddress->find('first', array(
 			'conditions' => $address,
 			'recursive' => -1,
-		));
-
-		$result = $this->ExtendedAddress->find('first', array(
-			'conditions' => $address,
-			'recursive' => -1,
 			'fields' => array_merge(array_keys($address), array('latitude', 'longitude'))
 		));
 		$this->assertTrue(!empty($result));
