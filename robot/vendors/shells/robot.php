@@ -166,7 +166,7 @@ class RobotShell extends Shell {
 
 		if (!empty($this->options['result'])) {
 			if (is_string($result)) {
-				$lines = split("\n", $result);
+				$lines = explode("\n", $result);
 				foreach($lines as $i => $line) {
 					$lines[$i] = "\t" . $line;
 				}
