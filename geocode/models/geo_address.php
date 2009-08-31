@@ -4,7 +4,6 @@ class GeoAddress extends AppModel {
 	 * Behaviors
 	 *
 	 * @var array
-	 * @access public
 	 */
 	public $actsAs = array('Geocodable');
 
@@ -16,7 +15,6 @@ class GeoAddress extends AppModel {
 	 * @param string $order SQL ORDER BY conditions (e.g. "price DESC" or "name ASC")
 	 * @param integer $recursive The number of levels deep to fetch associated records
 	 * @return array Array of records
-	 * @access public
 	 */
 	public function find($conditions = null, $fields = array(), $order = null, $recursive = null) {
 		$findMethods = array_merge($this->_findMethods, array('near'=>true));

@@ -4,7 +4,6 @@ class GeomapHelper extends AppHelper {
 	 * Helpers
 	 *
 	 * @var array
-	 * @access public
 	 */
 	public $helpers = array('Html', 'Javascript');
 
@@ -12,7 +11,6 @@ class GeomapHelper extends AppHelper {
 	 * Service information
 	 *
 	 * @var array
-	 * @access protected
 	 */
 	protected $services = array(
 		'google' => array(
@@ -30,7 +28,6 @@ class GeomapHelper extends AppHelper {
 	 * @param array $markers Add these markers (each marker is array('point' => (x, y), 'title' => '', 'content' => ''))
 	 * @param array $parameters Parameters (service, key, id, width, height, zoom, div)
 	 * @return string HTML + JS code
-	 * @access public
 	 */
 	public function map($center = null, $markers = array(), $parameters = array()) {
 		$parameters = array_merge(array(
@@ -119,7 +116,6 @@ class GeomapHelper extends AppHelper {
 	 * @param array $markers Add these markers (each marker is array('point' => (x, y), 'title' => '', 'content' => ''))
 	 * @param array $parameters Parameters (service, key, id, width, height, zoom, div)
 	 * @return string HTML + JS code
-	 * @access public
 	 */
 	protected function _google($id, $center, $markers, $parameters) {
 		$varName = 'm' . $id;
@@ -231,7 +227,6 @@ class GeomapHelper extends AppHelper {
 	 * @param array $markers Add these markers (each marker is array('point' => (x, y), 'title' => '', 'content' => ''))
 	 * @param array $parameters Parameters (service, key, id, width, height, zoom, div)
 	 * @return string HTML + JS code
-	 * @access public
 	 */
 	protected function _yahoo($id, $center, $markers, $parameters) {
 		$varName = 'm' . $id;

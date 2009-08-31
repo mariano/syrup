@@ -16,14 +16,46 @@ class TestAddress extends GeoAddress {
 	public $useTable = 'geo_addresses';
 }
 
+class City extends AppModel {
+	public $useDbConfig = 'test_suite';
+	public $belongsTo = array('State');
+}
+
+class State extends AppModel {
+	public $useDbConfig = 'test_suite';
+	public $belongsTo = array('Country');
+	public $hasMany = array('City');
+}
+
+class Country extends AppModel {
+	public $useDbConfig = 'test_suite';
+}
+
+class TestExtendedAddress extends GeoAddress {
+	public $useDbConfig = 'test_suite';
+	public $belongsTo = array('City', 'State');
+	public $actsAs = array('Geo.Geocodable'=>array(
+		'models' => array(
+			'city' => 'City',
+			'state' => 'State',
+			'country' => 'State.Country'
+		)
+	));
+	public $useTable = 'addresses';
+}
+
 class GeocodableBehaviorTest extends CakeTestCase {
 	public $fixtures = array(
-		'plugin.geocode.geo_address'
+		'plugin.geocode.geo_address', 'plugin.geocode.address', 'plugin.geocode.city', 'plugin.geocode.state', 'plugin.geocode.country'
+
 	);
 
 	public function startTest($method) {
 		$this->Address = new TestAddress();
 		$this->Address->Behaviors->attach('Geo.Geocodable', $this->Address->actsAs['Geo.Geocodable']);
+
+		$this->ExtendedAddress = new TestExtendedAddress();
+		$this->ExtendedAddress->Behaviors->attach('Geo.Geocodable', $this->Address->actsAs['Geo.Geocodable']);
 
 		$this->Geocodable = $this->Address->Behaviors->Geocodable;
 		$this->TestGeocodable = new TestGeocodableBehavior();
@@ -291,7 +323,7 @@ class GeocodableBehaviorTest extends CakeTestCase {
 		}
 	}
 
-	public function testBeforeSave() {
+	public function testSave() {
 		$address = array(
 			'address1' => '1600 Amphitheatre Parkway',
 			'city' => 'Mountan View',
@@ -327,6 +359,49 @@ class GeocodableBehaviorTest extends CakeTestCase {
 			));
 
 			$this->assertEqual($result[$this->Address->alias], $expected);
+		}
+	}
+
+	public function testExtendedSave() {
+		$address = array(
+			'address_1' => '1600 Amphitheatre Parkway',
+			'city_id' => '951470f2-e770-102c-aa5d-00138fbbb402',
+			'state_id' => '95147110-e770-102c-aa5d-00138fbbb402',
+			'zip' => 94043
+		);
+		$result = $this->ExtendedAddress->find('first', array(
+			'conditions' => $address,
+			'recursive' => -1,
+			'fields' => array_keys($address)
+		));
+		$this->assertFalse($result);
+
+		$this->ExtendedAddress->create();
+		$saved = $this->ExtendedAddress->save($address);
+		$this->assertTrue($saved !== false);
+
+		$result = $this->ExtendedAddress->find('first', array(
+			'conditions' => $address,
+			'recursive' => -1,
+		));
+
+		$result = $this->ExtendedAddress->find('first', array(
+			'conditions' => $address,
+			'recursive' => -1,
+			'fields' => array_merge(array_keys($address), array('latitude', 'longitude'))
+		));
+		$this->assertTrue(!empty($result));
+		if (!empty($result)) {
+			foreach(array('latitude', 'longitude') as $field) {
+				$result[$this->ExtendedAddress->alias][$field] = round($result[$this->ExtendedAddress->alias][$field], 2);
+			}
+
+			$expected = array_merge($address, array(
+				'latitude' => 37.42,
+				'longitude' => -122.08
+			));
+
+			$this->assertEqual($result[$this->ExtendedAddress->alias], $expected);
 		}
 	}
 
