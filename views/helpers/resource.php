@@ -31,10 +31,16 @@ class ResourceHelper extends AppHelper {
 		parent::beforeRender();
 
 		if (!empty($this->params['controller']) && !empty($this->params['action'])) {
-			$candidates = array(
-				$this->params['controller']
-				, $this->params['controller'] . '/' . $this->params['action']
-			);
+			$candidates = array();
+			$view = ClassRegistry::getObject('view');
+			if (!empty($view)) {
+				$candidates[] = $view->layout;
+			}
+
+			$candidates = array_merge($candidates, array(
+				$this->params['controller'],
+				$this->params['controller'] . '/' . $this->params['action']
+			));
 
 			foreach($candidates as $candidate) {
 				if (is_readable(CSS . DS . str_replace('/', DS, $candidate) . '.css')) {
