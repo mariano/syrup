@@ -77,11 +77,11 @@ class ResourceHelper extends AppHelper {
 		$resources = null;
 		switch($type) {
 			case 'css':
-				$resources = self::$__stylesheets;
+				$resources = array_filter(self::$__stylesheets);
 				break;
 			case 'js':
 			case 'javascript':
-				$resources = self::$__javascripts;
+				$resources = array_filter(self::$__javascripts);
 				break;
 		}
 
