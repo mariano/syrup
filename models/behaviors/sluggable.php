@@ -240,7 +240,9 @@ class SluggableBehavior extends ModelBehavior {
 			'length' => 100,
 			'overwrite' => false,
 			'translation' => null,
-			'ignore' => array()
+			'ignore' => array(
+				'and', 'for', 'is', 'of', 'the'
+			)
 		);
 
 		if (!isset($this->settings[$model->alias])) {
