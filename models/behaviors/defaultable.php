@@ -32,7 +32,7 @@ class DefaultableBehavior extends ModelBehavior {
 	 */
 	public function beforeFind($model, $query) {
 		$result = parent::beforeFind($model, $query);
-		if (empty($this->settings[$model->alias]['find']) || $result === false) {
+		if (empty($this->settings[$model->alias]['find']) || (isset($query['defaultable']) && $query['defaultable'] === false) || $result === false) {
 			return $result;
 		} else if (is_array($result)) {
 			$query = $result;
