@@ -69,7 +69,7 @@ class DefaultableBehavior extends ModelBehavior {
 			}
 
 			if ($include) {
-				$defaultConditions[$field] = $fieldValue;
+				$defaultConditions[$model->alias . '.' . $field] = $fieldValue;
 			}
 		}
 
