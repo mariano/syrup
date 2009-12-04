@@ -43,37 +43,48 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 */
 	public function beforeDelete($model, $cascade = true) {
 		if ($this->settings[$model->alias]['delete'] && $model->hasField($this->settings[$model->alias]['field'])) {
-			$attributes = $this->settings[$model->alias];
-			$id = $model->id;
-
-			$data = array($model->alias => array(
-				$attributes['field'] => 1
-			));
-
-			if (isset($attributes['field_date']) && $model->hasField($attributes['field_date'])) {
-				$data[$model->alias][$attributes['field_date']] = date('Y-m-d H:i:s');
-			}
-
-			foreach(array_merge(array_keys($data[$model->alias]), array('field', 'field_date', 'find', 'delete')) as $field) {
-				unset($attributes[$field]);
-			}
-
-			if (!empty($attributes)) {
-				$data[$model->alias] = array_merge($data[$model->alias], $attributes);
-			}
-
-			$model->id = $id;
-			$deleted = $model->save($data, false, array_keys($data[$model->alias]));
-
-			if ($deleted && $cascade) {
-				$model->_deleteDependent($id, $cascade);
-				$model->_deleteLinks($id);
-			}
-
+			$this->softDelete($model, $model->id, $cascade);
 			return false;
 		}
 
 		return true;
+	}
+
+	/**
+	 * Soft deletes a record.
+	 *
+	 * @param object $model Model from where the method is being executed.
+	 * @param mixed $id ID of the soft-deleted record.
+	 * @param boolean $cascade Also delete dependent records
+	 * @return boolean Result of the operation.
+	 */
+	public function softDelete($model, $id, $cascade = false) {
+		$attributes = $this->settings[$model->alias];
+		$data = array($model->alias => array(
+			$attributes['field'] => 1
+		));
+
+		if (isset($attributes['field_date']) && $model->hasField($attributes['field_date'])) {
+			$data[$model->alias][$attributes['field_date']] = date('Y-m-d H:i:s');
+		}
+
+		foreach(array_merge(array_keys($data[$model->alias]), array('field', 'field_date', 'find', 'delete')) as $field) {
+			unset($attributes[$field]);
+		}
+
+		if (!empty($attributes)) {
+			$data[$model->alias] = array_merge($data[$model->alias], $attributes);
+		}
+
+		$model->id = $id;
+		$deleted = $model->save($data, false, array_keys($data[$model->alias]));
+
+		if ($deleted && $cascade) {
+			$model->_deleteDependent($id, $cascade);
+			$model->_deleteLinks($id);
+		}
+
+		return $deleted;
 	}
 
 	/**
