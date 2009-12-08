@@ -225,7 +225,10 @@ class SoftDeletableBehavior extends ModelBehavior {
 						break;
 					}
 				}
-			} else if (empty($queryData['conditions']) || (!in_array($this->settings[$model->alias]['field'], array_keys($queryData['conditions'])) && !in_array($model->alias . '.' . $this->settings[$model->alias]['field'], array_keys($queryData['conditions'])))) {
+			} else if (empty($queryData['conditions']) || (
+					!in_array($this->settings[$model->alias]['field'], array_keys($queryData['conditions']), true) &&
+					!in_array($model->alias . '.' . $this->settings[$model->alias]['field'], array_keys($queryData['conditions']), true)
+			)) {
 				$include = true;
 			}
 
