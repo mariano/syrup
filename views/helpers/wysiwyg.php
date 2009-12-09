@@ -18,6 +18,7 @@ class WysiwygHelper extends AppHelper {
 			'editor_selector' => 'wysiwyg',
 			'convert_urls' => true,
 			'relative_urls' => false,
+			'plugins' => array(),
 			'theme' => 'advanced',
 			'theme_advanced_toolbar_location' => 'top',
 			'theme_advanced_toolbar_align' => 'left',
@@ -98,15 +99,21 @@ class WysiwygHelper extends AppHelper {
 			'class' => 'wysiwyg'
 		), array_diff_key($options, $defaults));
 
+		$layout = null;
 		if (!empty($options['layout'])) {
 			$layout = Configure::read('Wysiwyg.' . $options['layout']);
-			if (!empty($layout)) {
-				$this->layouts[$options['layout']] = $layout;
-			}
 		}
 
 		if (!empty($options['layout']) && !empty($this->layouts[$options['layout']])) {
-			$editorOptions = array_merge($this->layouts[$options['layout']], $editorOptions);
+			if (!empty($layout)) {
+				$layout = Set::merge($this->layouts[$options['layout']], $layout);
+			} else {
+				$layout = $this->layouts[$options['layout']];
+			}
+		}
+
+		if (!empty($options['layout']) && !empty($layout)) {
+			$editorOptions = array_merge($layout, $editorOptions);
 		}
 
 		foreach($editorOptions as $key => $value) {
