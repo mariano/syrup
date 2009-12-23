@@ -90,14 +90,19 @@ class WysiwygHelper extends AppHelper {
 	 * @return string HTML + JS code
 	 */
 	public function editor($fieldName, $options = array(), $editorOptions = array()) {
+		$layout = Configure::read('Wysiwyg.defaultLayout');
 		$defaults = array(
-			'layout' => 'basic',
+			'layout' => !empty($layout) ? $layout : 'basic',
 			'includeField' => true
 		);
 		$options = array_merge($defaults, $options);
 		$fieldOptions = array_merge(array(
 			'class' => 'wysiwyg'
 		), array_diff_key($options, $defaults));
+
+		$editorOptions = array_merge(array(
+			'save_callback' => 'onWysiwygSave'
+		), $editorOptions);
 
 		$layout = null;
 		if (!empty($options['layout'])) {
@@ -110,6 +115,17 @@ class WysiwygHelper extends AppHelper {
 			} else {
 				$layout = $this->layouts[$options['layout']];
 			}
+		} else if (!empty($options['layout']) && !empty($layout)) {
+			$layout = array_merge(array(
+				'mode' => 'textareas',
+				'editor_selector' => 'wysiwyg',
+				'convert_urls' => true,
+				'relative_urls' => false,
+				'plugins' => array(),
+				'theme' => 'advanced',
+				'theme_advanced_toolbar_location' => 'top',
+				'theme_advanced_toolbar_align' => 'left'
+			), $layout);
 		}
 
 		if (!empty($options['layout']) && !empty($layout)) {
@@ -122,13 +138,17 @@ class WysiwygHelper extends AppHelper {
 			}
 		}
 
+		$out = '';
+
 		if (!$this->included) {
 			$this->Javascript->link('tiny_mce/tiny_mce.js', false);
+			$out .= $this->Javascript->codeBlock('function onWysiwygSave(id, html, body) {
+				return html.replace(/<!--.*?-->/g, "");
+			}');
 		}
 
 		$script = 'tinyMCE.init(' . $this->Javascript->object($editorOptions) . ');';
 
-		$out = '';
 		if (!empty($options['includeField'])) {
 			$out .= $this->Form->textarea($fieldName, $fieldOptions);
 		}
