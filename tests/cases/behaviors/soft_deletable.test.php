@@ -10,7 +10,7 @@
  * @filesource
  * @author Mariano Iglesias
  * @link http://cake-syrup.sourceforge.net/ingredients/soft-deletable-behavior/
- * @version	$Revision$
+ * @version	$Revision: 924 $
  * @license	http://www.opensource.org/licenses/mit-license.php The MIT License
  * @package app.tests
  * @subpackage app.tests.cases.behaviors
@@ -26,6 +26,15 @@ class SoftDeletableTestModel extends CakeTestModel {
 class DeletableArticle extends SoftDeletableTestModel {
 	public $name = 'DeletableArticle';
 	public $hasMany = array('DeletableComment' => array('dependent' => true));
+	public $callbacks = array();
+	public $abort = false;
+	public function beforeSoftDeletable($id) {
+		$this->callbacks[] = array('before', $id);
+		return $this->abort === false;
+	}
+	public function afterSoftDeletable($id) {
+		$this->callbacks[] = array('after', $id);
+	}
 }
 
 class DeletableComment extends SoftDeletableTestModel {
@@ -560,6 +569,52 @@ class SoftDeletableTestCase extends CakeTestCase {
 		);
 		$this->assertEqual($result, $expected);
 		$this->DeletableArticle->DeletableComment->Behaviors->enable('SoftDeletable');
+	}
+
+	public function testCallbacks() {
+		$result = $this->DeletableArticle->find('first', array(
+			'conditions' => array('id' => 1),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
+		$expected = array('DeletableArticle' => array(
+			'id' => 1, 'title' => 'First Article'
+		));
+		$this->assertEqual($result, $expected);
+
+		$this->DeletableArticle->abort = true;
+		$this->DeletableArticle->delete(1);
+		$this->DeletableArticle->abort = false;
+
+		$result = $this->DeletableArticle->callbacks;
+		$expected = array(array('before', 1));
+		$this->assertEqual($result, $expected);
+
+		$result = $this->DeletableArticle->find('first', array(
+			'conditions' => array('id' => 1),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
+		$expected = array('DeletableArticle' => array(
+			'id' => 1, 'title' => 'First Article'
+		));
+		$this->assertEqual($result, $expected);
+
+		$this->DeletableArticle->callbacks = array();
+		$this->DeletableArticle->delete(1);
+
+		$result = $this->DeletableArticle->callbacks;
+		$expected = array(array('before', 1), array('after', 1));
+		$this->assertEqual($result, $expected);
+		$this->DeletableArticles->callbacks = array();
+
+		$result = $this->DeletableArticle->find('first', array(
+			'conditions' => array('id' => 1),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
+		$expected = false;
+		$this->assertEqual($result, $expected);
 	}
 }
 
