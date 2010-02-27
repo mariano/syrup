@@ -92,7 +92,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 			$model->_deleteLinks($id);
 		}
 
-		return $deleted;
+		return !empty($deleted);
 	}
 
 	/**
