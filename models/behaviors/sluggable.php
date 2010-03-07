@@ -294,7 +294,7 @@ class SluggableBehavior extends ModelBehavior {
 
 			if (!empty($label)) {
 				$slug = $this->_slug($label, $settings);
-				$conditions = array($model->alias . '.' . $settings['slug'] => $slug);
+				$conditions = array($model->alias . '.' . $settings['slug'] . ' LIKE' => $slug . '%');
 				if (!empty($model->id)) {
 					$conditions['not'] = array($model->alias . '.' . $model->primaryKey => $model->id);
 				}

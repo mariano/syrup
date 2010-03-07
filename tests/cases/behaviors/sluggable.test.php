@@ -34,39 +34,39 @@ class SluggableTestCase extends CakeTestCase {
 
 		$result = $Sluggable->run('_slug', 'title', array('separator' => '-', 'length' => 100));
 		$expected = 'title';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my title', array('separator' => '-', 'length' => 100));
 		$expected = 'my-title';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'MY TITle', array('separator' => '-', 'length' => 100));
 		$expected = 'my-title';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my  long title with  some extra spaces  ', array('separator' => '-', 'length' => 100));
 		$expected = 'my-long-title-with-some-extra-spaces';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my  long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 100));
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', '-my - long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 100));
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my  long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 10));
 		$expected = 'my-long-ti';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my  long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 18));
 		$expected = 'my-long-title-with';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'my  long title! with@  "some" extra spaces & weird chars ', array('separator' => '_', 'length' => 18));
 		$expected = 'my_long_title_with';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 	}
 
 	public function testGenerationWithTranslation() {
@@ -76,41 +76,41 @@ class SluggableTestCase extends CakeTestCase {
 
 		$result = $Sluggable->run('_slug', 'normal string for slug', array('separator' => '-', 'length' => 100, 'translation' => 'utf-8'));
 		$expected = 'normal-string-for-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', '-my - long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 100, 'translation' => 'utf-8'));
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(196).chr(146) . 're C' . chr(195).chr(182) . 'mes', array('separator' => '-', 'length' => 100, 'translation' => 'utf-8'));
 		$expected = 'here-comes';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(196).chr(155) . 're C' . chr(195).chr(182) . 'mes ' . chr(196).chr(129) . ' mix ' . chr(197).chr(165).chr(196).chr(164) . 'under', array('separator' => '-', 'length' => 100, 'translation' => 'utf-8'));
 		$expected = 'here-comes-a-mix-thunder';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(196).chr(155) . 're C' . chr(195).chr(182) . 'mes ' . chr(196).chr(129) . ' mix ' . chr(197).chr(165).chr(196).chr(164) . 'under with ' . chr(208).chr(160) . 'u' . chr(209).chr(129) . 'sian flavor', array('separator' => '-', 'length' => 100, 'translation' => 'utf-8'));
 		$expected = 'here-comes-a-mix-thunder-with-russian-flavor';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		// Predefined: ISO-8859-1
 
 		$result = $Sluggable->run('_slug', 'normal string for slug', array('separator' => '-', 'length' => 100, 'translation' => 'iso-8859-1'));
 		$expected = 'normal-string-for-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', '-my - long title! with@  "some" extra spaces & weird chars ', array('separator' => '-', 'length' => 100, 'translation' => 'iso-8859-1'));
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(128) . 're C' . chr(245) . 'mes', array('separator' => '-', 'length' => 100, 'translation' => 'iso-8859-1'));
 		$expected = 'here-comes';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(128) . 're C' . chr(245) . 'mes ' . chr(226) . ' mix ' . chr(254) . 'under', array('separator' => '-', 'length' => 100, 'translation' => 'iso-8859-1'));
 		$expected = 'here-comes-a-mix-thunder';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		// UTF-8
 
@@ -217,19 +217,19 @@ class SluggableTestCase extends CakeTestCase {
 
 		$result = $Sluggable->run('_slug', 'normal string for slug', $settings);
 		$expected = 'normal-string-for-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', '-my - long title! with@  "some" extra spaces & weird chars ', $settings);
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(196).chr(146) . 're C' . chr(195).chr(182) . 'mes', $settings);
 		$expected = 'here-comes';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(196).chr(155) . 're C' . chr(195).chr(182) . 'mes ' . chr(196).chr(129) . ' mix ' . chr(197).chr(165).chr(196).chr(164) . 'under', $settings);
 		$expected = 'here-comes-a-mix-thunder';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		// ISO-8859-1 translation table
 
@@ -251,19 +251,19 @@ class SluggableTestCase extends CakeTestCase {
 
 		$result = $Sluggable->run('_slug', 'normal string for slug', $settings);
 		$expected = 'normal-string-for-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', '-my - long title! with@  "some" extra spaces & weird chars ', $settings);
 		$expected = 'my-long-title-with-some-extra-spaces-weird-chars';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(128) . 're C' . chr(245) . 'mes', $settings);
 		$expected = 'here-comes';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'H' . chr(128) . 're C' . chr(245) . 'mes ' . chr(226) . ' mix ' . chr(254) . 'under', $settings);
 		$expected = 'here-comes-a-mix-thunder';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 	}
 
 	public function testGenerationWithIgnore() {
@@ -276,35 +276,35 @@ class SluggableTestCase extends CakeTestCase {
 			'ignore' => array('for')
 		));
 		$expected = 'normal-string-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'for normal string for slug', array(
 			'separator' => '-', 'length' => 100, 'translation' => 'utf-8',
 			'ignore' => array('for')
 		));
 		$expected = 'normal-string-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'for normal string for slug for', array(
 			'separator' => '-', 'length' => 100, 'translation' => 'utf-8',
 			'ignore' => array('for')
 		));
 		$expected = 'normal-string-slug';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'this is my string for slug generation', array(
 			'separator' => '-', 'length' => 100, 'translation' => 'utf-8',
 			'ignore' => array('for', 'is', 'this')
 		));
 		$expected = 'my-string-slug-generation';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$result = $Sluggable->run('_slug', 'i saw and grabbed an apple from the tree. light should be off or on?', array(
 			'separator' => '-', 'length' => 100, 'translation' => 'utf-8',
 			'ignore' => array('a', 'an', 'and', 'i', 'of', 'on', 'or', 'the')
 		));
 		$expected = 'saw-grabbed-apple-from-tree-light-should-be-off';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 	}
 
 	public function testBeforeSave() {
@@ -317,28 +317,28 @@ class SluggableTestCase extends CakeTestCase {
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'My test title', 'slug' => 'my-test-title'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$this->SlugArticle->data = array('SlugArticle' => array('title' => 'First Article'));
 		$result = $Sluggable->beforeSave($this->SlugArticle);
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'First Article', 'slug' => 'first-article-1'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$this->SlugArticle->data = array('SlugArticle' => array('title' => 'First Article Unique'));
 		$result = $Sluggable->beforeSave($this->SlugArticle);
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'First Article Unique', 'slug' => 'first-article-unique'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$this->SlugArticle->data = array('SlugArticle' => array('body' => 'Just Body'));
 		$result = $Sluggable->beforeSave($this->SlugArticle);
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('body' => 'Just Body'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$Sluggable->setup($this->SlugArticle, array('label' => array('title', 'subtitle'), 'separator' => '-', 'length' => 100));
 
@@ -347,21 +347,21 @@ class SluggableTestCase extends CakeTestCase {
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'My test title', 'slug' => 'my-test-title'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$this->SlugArticle->data = array('SlugArticle' => array('title' => 'My test title', 'subtitle' => ''));
 		$result = $Sluggable->beforeSave($this->SlugArticle);
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'My test title', 'subtitle' => '', 'slug' => 'my-test-title'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$this->SlugArticle->data = array('SlugArticle' => array('title' => 'My test title', 'subtitle' => 'My subtitle'));
 		$result = $Sluggable->beforeSave($this->SlugArticle);
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'My test title', 'subtitle' => 'My subtitle', 'slug' => 'my-test-title-my-subtitle'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$Sluggable->setup($this->SlugArticle, array('overwrite' => false));
 
@@ -371,7 +371,7 @@ class SluggableTestCase extends CakeTestCase {
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'New First Article'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 		$this->SlugArticle->id = null;
 
 		$Sluggable->setup($this->SlugArticle, array('overwrite' => true));
@@ -382,7 +382,7 @@ class SluggableTestCase extends CakeTestCase {
 		$this->assertTrue($result !== false);
 		$result = $this->SlugArticle->data;
 		$expected = array('SlugArticle' => array('title' => 'New First Article', 'slug' => 'new-first-article'));
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 		$this->SlugArticle->id = null;
 	}
 
@@ -449,23 +449,66 @@ class SluggableTestCase extends CakeTestCase {
 		$result = $this->SlugArticle->saveField('body', $expected);
 		$this->assertTrue($result);
 		$result = $this->SlugArticle->field('body');
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 		$result = $this->SlugArticle->field('title');
 		$expected = 'First Article';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 		$result = $this->SlugArticle->field('slug');
 		$expected = 'first-article';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 
 		$expected = 'New title for first article';
 		$this->SlugArticle->id = 1;
 		$result = $this->SlugArticle->saveField('title', $expected);
 		$this->assertTrue($result);
 		$result = $this->SlugArticle->field('title');
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
 		$result = $this->SlugArticle->field('slug');
 		$expected = 'first-article';
-		$this->assertEqual($result, $expected);
+		$this->assertEqual($expected, $result);
+	}
+
+	public function testSaveCollisions() {
+		$data = array('SlugArticle' => array('title' => 'New Article', 'subtitle' => '', 'body' => 'New Body 1'));
+		$result = $this->SlugArticle->create();
+		$this->assertTrue($result !== false);
+		$result = $this->SlugArticle->save($data);
+		$this->assertTrue($result !== false);
+
+		$result = $this->SlugArticle->field('slug');
+		$expected = 'new-article';
+		$this->assertEqual($expected, $result);
+
+		$data = array('SlugArticle' => array('title' => 'New Article', 'subtitle' => '', 'body' => 'New Body 1'));
+		$result = $this->SlugArticle->create();
+		$this->assertTrue($result !== false);
+		$result = $this->SlugArticle->save($data);
+		$this->assertTrue($result !== false);
+
+		$result = $this->SlugArticle->field('slug');
+		$expected = 'new-article-1';
+		$this->assertEqual($expected, $result);
+
+		$data = array('SlugArticle' => array('title' => 'New Article', 'subtitle' => '', 'body' => 'New Body 1'));
+		$result = $this->SlugArticle->create();
+		$this->assertTrue($result !== false);
+		$result = $this->SlugArticle->save($data);
+		$this->assertTrue($result !== false);
+
+		$result = $this->SlugArticle->field('slug');
+		$expected = 'new-article-2';
+		$this->assertEqual($expected, $result);
+
+
+		$data = array('SlugArticle' => array('title' => 'New Article', 'subtitle' => '', 'body' => 'New Body 1'));
+		$result = $this->SlugArticle->create();
+		$this->assertTrue($result !== false);
+		$result = $this->SlugArticle->save($data);
+		$this->assertTrue($result !== false);
+
+		$result = $this->SlugArticle->field('slug');
+		$expected = 'new-article-3';
+		$this->assertEqual($expected, $result);
 	}
 }
 
