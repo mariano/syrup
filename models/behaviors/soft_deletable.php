@@ -5,7 +5,7 @@
  * @filesource
  * @author Mariano Iglesias
  * @link http://cake-syrup.sourceforge.net/ingredients/soft-deletable-behavior/
- * @version	$Revision: 966 $
+ * @version	$Revision: 2041 $
  * @license	http://www.opensource.org/licenses/mit-license.php The MIT License
  * @package app
  * @subpackage app.models.behaviors
@@ -88,6 +88,17 @@ class SoftDeletableBehavior extends ModelBehavior {
 		}
 
 		if ($deleted && $cascade) {
+			foreach(array('hasOne', 'hasMany') as $binding) {
+				if (empty($model->$binding)) {
+					continue;
+				}
+				foreach ($model->$binding as $assoc => $data) {
+					if (!array_key_exists('dependent', $data)) {
+						$model->$binding[$assoc]['dependent'] = false;
+					}
+				}
+			}
+
 			$model->_deleteDependent($id, $cascade);
 			$model->_deleteLinks($id);
 		}
