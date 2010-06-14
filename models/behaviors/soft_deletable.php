@@ -32,6 +32,8 @@ class SoftDeletableBehavior extends ModelBehavior {
 		}
 
 		$this->settings[$model->alias] = array_merge($this->settings[$model->alias], (is_array($settings) ? $settings : array()));
+		$this->settings[$model->alias]['hasField'] = $model->hasField($this->settings[$model->alias]['field']);
+		$this->settings[$model->alias]['hasFieldDate'] = $model->hasField($this->settings[$model->alias]['field_date']);
 	}
 
 	/**
@@ -42,7 +44,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 * @return boolean Set to true to continue with delete, false otherwise
 	 */
 	public function beforeDelete($model, $cascade = true) {
-		if ($this->settings[$model->alias]['delete'] && $model->hasField($this->settings[$model->alias]['field'])) {
+		if ($this->settings[$model->alias]['hasField'] && $this->settings[$model->alias]['delete']) {
 			$this->softDelete($model, $model->id, $cascade);
 			return false;
 		}
@@ -64,7 +66,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 			$attributes['field'] => 1
 		));
 
-		if (isset($attributes['field_date']) && $model->hasField($attributes['field_date'])) {
+		if ($this->settings[$model->alias]['hasFieldDate'] && isset($attributes['field_date'])) {
 			$data[$model->alias][$attributes['field_date']] = date('Y-m-d H:i:s');
 		}
 
@@ -137,7 +139,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 	public function purge($model, $cascade = true) {
 		$purged = false;
 
-		if ($model->hasField($this->settings[$model->alias]['field'])) {
+		if ($this->settings[$model->alias]['hasField']) {
 			$onFind = $this->settings[$model->alias]['find'];
 			$onDelete = $this->settings[$model->alias]['delete'];
 			$this->enableSoftDeletable($model, false);
@@ -160,7 +162,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 * @return boolean Result of the operation.
 	 */
 	public function undelete($model, $id = null, $attributes = array()) {
-		if ($model->hasField($this->settings[$model->alias]['field'])) {
+		if ($this->settings[$model->alias]['hasField']) {
 			if (empty($id)) {
 				$id = $model->id;
 			}
@@ -170,7 +172,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 				$this->settings[$model->alias]['field'] => '0'
 			));
 
-			if (isset($this->settings[$model->alias]['field_date']) && $model->hasField($this->settings[$model->alias]['field_date'])) {
+			if ($this->settings[$model->alias]['hasFieldDate'] && isset($this->settings[$model->alias]['field_date'])) {
 				$data[$model->alias][$this->settings[$model->alias]['field_date']] = null;
 			}
 
@@ -225,10 +227,10 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 */
 	public function beforeFind($model, $queryData) {
 		if (
-			($this->settings[$model->alias]['find'] && $model->hasField($this->settings[$model->alias]['field'])) ||
-			($this->settings[$model->alias]['count'] && is_string($queryData['fields']) && strpos($queryData['fields'], 'COUNT(*)') === 0)
+			$this->settings[$model->alias]['hasField'] &&
+			($this->settings[$model->alias]['find'] || ($this->settings[$model->alias]['count'] && $model->findQueryType == 'count'))
 		) {
-			$Db =& ConnectionManager::getDataSource($model->useDbConfig);
+			$Db = ConnectionManager::getDataSource($model->useDbConfig);
 			$include = false;
 
 			if (!empty($queryData['conditions']) && is_string($queryData['conditions'])) {
