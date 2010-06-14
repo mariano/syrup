@@ -5,7 +5,7 @@
  * @filesource
  * @author Mariano Iglesias
  * @link http://cake-syrup.sourceforge.net/ingredients/soft-deletable-behavior/
- * @version	$Revision: 2041 $
+ * @version	$Revision: 2265 $
  * @license	http://www.opensource.org/licenses/mit-license.php The MIT License
  * @package app
  * @subpackage app.models.behaviors
@@ -25,7 +25,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 * @param array $settings Settings to override for model.
 	 */
 	public function setup($model, $settings = array()) {
-		$default = array('field' => 'deleted', 'field_date' => 'deleted_date', 'delete' => true, 'find' => true);
+		$default = array('field' => 'deleted', 'field_date' => 'deleted_date', 'delete' => true, 'find' => true, 'count' => false);
 
 		if (!isset($this->settings[$model->alias])) {
 			$this->settings[$model->alias] = $default;
@@ -94,7 +94,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 				}
 				foreach ($model->$binding as $assoc => $data) {
 					if (!array_key_exists('dependent', $data)) {
-						$model->$binding[$assoc]['dependent'] = false;
+						$model->{$binding}[$assoc]['dependent'] = false;
 					}
 				}
 			}
@@ -198,13 +198,13 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 * Set if the beforeFind() or beforeDelete() should be overriden for specific model.
 	 *
 	 * @param object $model Model about to be deleted.
-	 * @param mixed $methods If string, method (find / delete) to enable on, if array array of method names, if boolean, enable it for find method
+	 * @param mixed $methods If string, method (find / delete / count) to enable on, if array array of method names, if boolean, enable it for find method
 	 * @param boolean $enable If specified method should be overriden.
 	 */
 	public function enableSoftDeletable($model, $methods, $enable = true) {
 		if (is_bool($methods)) {
 			$enable = $methods;
-			$methods = array('find', 'delete');
+			$methods = array('find', 'delete', 'count');
 		}
 
 		if (!is_array($methods)) {
@@ -224,7 +224,10 @@ class SoftDeletableBehavior extends ModelBehavior {
 	 * @return mixed Set to false to abort find operation, or return an array with data used to execute query
 	 */
 	public function beforeFind($model, $queryData) {
-		if ($this->settings[$model->alias]['find'] && $model->hasField($this->settings[$model->alias]['field'])) {
+		if (
+			($this->settings[$model->alias]['find'] && $model->hasField($this->settings[$model->alias]['field'])) ||
+			($this->settings[$model->alias]['count'] && is_string($queryData['fields']) && strpos($queryData['fields'], 'COUNT(*)') === 0)
+		) {
 			$Db =& ConnectionManager::getDataSource($model->useDbConfig);
 			$include = false;
 
@@ -283,7 +286,9 @@ class SoftDeletableBehavior extends ModelBehavior {
 
 			$this->__backAttributes[$model->alias]['find'] = $this->settings[$model->alias]['find'];
 			$this->__backAttributes[$model->alias]['delete'] = $this->settings[$model->alias]['delete'];
+			$this->__backAttributes[$model->alias]['count'] = $this->settings[$model->alias]['count'];
 			$this->enableSoftDeletable($model, false);
+			$this->enableSoftDeletable($model, 'count', true);
 		}
 
 		return true;
@@ -299,6 +304,7 @@ class SoftDeletableBehavior extends ModelBehavior {
 		if (isset($this->__backAttributes[$model->alias]['find'])) {
 			$this->enableSoftDeletable($model, 'find', $this->__backAttributes[$model->alias]['find']);
 			$this->enableSoftDeletable($model, 'delete', $this->__backAttributes[$model->alias]['delete']);
+			$this->enableSoftDeletable($model, 'count', $this->__backAttributes[$model->alias]['count']);
 			unset($this->__backAttributes[$model->alias]['find']);
 			unset($this->__backAttributes[$model->alias]['delete']);
 		}

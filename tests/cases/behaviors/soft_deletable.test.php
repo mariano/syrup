@@ -23,8 +23,13 @@ class SoftDeletableTestModel extends CakeTestModel {
 	public $actsAs = array('Syrup.SoftDeletable');
 }
 
+class DeletableCategory extends SoftDeletableTestModel {
+	public $name = 'DeletableCategory';
+}
+
 class DeletableArticle extends SoftDeletableTestModel {
 	public $name = 'DeletableArticle';
+	public $belongsTo = array('DeletableCategory' => array('counterCache' => true));
 	public $hasMany = array('DeletableComment' => array('dependent' => true));
 	public $callbacks = array();
 	public $abort = false;
@@ -49,7 +54,9 @@ class DeletableComment extends SoftDeletableTestModel {
  * @subpackage app.tests.cases.models
  */
 class SoftDeletableTestCase extends CakeTestCase {
-	public $fixtures = array('plugin.syrup.deletable_article', 'plugin.syrup.deletable_comment');
+	public $fixtures = array(
+		'plugin.syrup.deletable_article', 'plugin.syrup.deletable_category', 'plugin.syrup.deletable_comment'
+	);
 
 	public function startTest($method) {
 		parent::startTest($method);
@@ -63,8 +70,8 @@ class SoftDeletableTestCase extends CakeTestCase {
 	}
 
 	public function testBeforeFind() {
-		$Db =& ConnectionManager::getDataSource($this->DeletableArticle->useDbConfig);
-		$SoftDeletable =& new SoftDeletableBehavior();
+		$Db = ConnectionManager::getDataSource($this->DeletableArticle->useDbConfig);
+		$SoftDeletable = new SoftDeletableBehavior();
 		$SoftDeletable->setup($this->DeletableArticle);
 
 		$result = $SoftDeletable->beforeFind($this->DeletableArticle, array());
@@ -182,10 +189,14 @@ class SoftDeletableTestCase extends CakeTestCase {
 	}
 
 	public function testFindStringConditions() {
-		$Db =& ConnectionManager::getDataSource($this->DeletableArticle->useDbConfig);
+		$Db = ConnectionManager::getDataSource($this->DeletableArticle->useDbConfig);
 
 		$this->DeletableArticle->unbindModel(array('hasMany' => array('DeletableComment')));
-		$result = $this->DeletableArticle->find('all', array('conditions' => 'title LIKE ' . $Db->value('%Article%'), 'fields' => array('id', 'title')));
+		$result = $this->DeletableArticle->find('all', array(
+			'conditions' => 'title LIKE ' . $Db->value('%Article%'),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
 		$expected = array(
 			array('DeletableArticle' => array(
 				'id' => 1, 'title' => 'First Article'
@@ -200,7 +211,11 @@ class SoftDeletableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 
 		$this->DeletableArticle->unbindModel(array('hasMany' => array('DeletableComment')));
-		$result = $this->DeletableArticle->find('all', array('conditions' => 'id > 0 AND title LIKE ' . $Db->value('%ir%'), 'fields' => array('id', 'title')));
+		$result = $this->DeletableArticle->find('all', array(
+			'conditions' => 'id > 0 AND title LIKE ' . $Db->value('%ir%'),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
 		$expected = array(
 			array('DeletableArticle' => array(
 				'id' => 1, 'title' => 'First Article'
@@ -615,6 +630,87 @@ class SoftDeletableTestCase extends CakeTestCase {
 		));
 		$expected = false;
 		$this->assertEqual($result, $expected);
+	}
+
+	public function testCounterCache() {
+		$result = $this->DeletableArticle->DeletableCategory->find('all', array(
+			'fields' => array('id', 'deletable_article_count'),
+			'recursive' => -1
+		));
+		$this->assertTrue(!empty($result));
+		$result = Set::combine($result, '/DeletableCategory/id', '/DeletableCategory/deletable_article_count');
+		$expected = array(
+			1 => 2,
+			2 => 1,
+			3 => 0
+		);
+		$this->assertEqual($result, $expected);
+
+		$this->DeletableArticle->delete(1);
+		
+		$result = $this->DeletableArticle->find('first', array(
+			'conditions' => array('id' => 1, 'deleted' => 1),
+			'fields' => array('id', 'title'),
+			'recursive' => -1
+		));
+		$expected = array('DeletableArticle' => array(
+			'id' => 1, 'title' => 'First Article'
+		));
+		$this->assertEqual($result, $expected);
+
+		$result = $this->DeletableArticle->DeletableCategory->find('all', array(
+			'fields' => array('id', 'deletable_article_count'),
+			'recursive' => -1
+		));
+		$this->assertTrue(!empty($result));
+		$result = Set::combine($result, '/DeletableCategory/id', '/DeletableCategory/deletable_article_count');
+		$expected = array(
+			1 => 1,
+			2 => 1,
+			3 => 0
+		);
+
+		$this->DeletableArticle->create();
+		$result = $this->DeletableArticle->save(array('DeletableArticle' => array(
+			'deletable_category_id' => 1,
+			'title' => 'New First Article',
+			'body' => 'New First Article Body'
+		)));
+		$this->assertTrue(!empty($result));
+
+		$this->DeletableArticle->create();
+		$result = $this->DeletableArticle->save(array('DeletableArticle' => array(
+			'deletable_category_id' => 3,
+			'title' => 'New Second Article',
+			'body' => 'New Second Article Body'
+		)));
+		$this->assertTrue(!empty($result));
+
+		$result = $this->DeletableArticle->DeletableCategory->find('all', array(
+			'fields' => array('id', 'deletable_article_count'),
+			'recursive' => -1
+		));
+		$this->assertTrue(!empty($result));
+		$result = Set::combine($result, '/DeletableCategory/id', '/DeletableCategory/deletable_article_count');
+		$expected = array(
+			1 => 2,
+			2 => 1,
+			3 => 1
+		);
+
+		$this->DeletableArticle->undelete(1);
+
+		$result = $this->DeletableArticle->DeletableCategory->find('all', array(
+			'fields' => array('id', 'deletable_article_count'),
+			'recursive' => -1
+		));
+		$this->assertTrue(!empty($result));
+		$result = Set::combine($result, '/DeletableCategory/id', '/DeletableCategory/deletable_article_count');
+		$expected = array(
+			1 => 3,
+			2 => 1,
+			3 => 1
+		);
 	}
 }
 
