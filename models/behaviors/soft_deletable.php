@@ -78,16 +78,28 @@ class SoftDeletableBehavior extends ModelBehavior {
 			$data[$model->alias] = array_merge($data[$model->alias], $attributes);
 		}
 
+		if ($this->_triggerCustomCallback($model, 'beforeSoftDeletable', $id, false) === false) {
+			return false;
+		}
+
+		/*
+		$model->Behaviors->dispatchMethod($model, 'beforeSoftDeletable', (array) $id);
 		if (method_exists($model, 'beforeSoftDeletable') && $model->beforeSoftDeletable($id) === false) {
 			return false;
 		}
+		*/
 
 		$model->id = $id;
 		$deleted = $model->save($data, false, array_keys($data[$model->alias]));
 
+		/*
+		$model->Behaviors->dispatchMethod($model, 'afterSoftDeletable', (array) $id);
 		if (method_exists($model, 'afterSoftDeletable')) {
 			$model->afterSoftDeletable($id);
 		}
+		*/
+
+		$this->_triggerCustomCallback($model, 'afterSoftDeletable', $id);
 
 		if ($deleted && $cascade) {
 			foreach(array('hasOne', 'hasMany') as $binding) {
@@ -310,6 +322,39 @@ class SoftDeletableBehavior extends ModelBehavior {
 			unset($this->__backAttributes[$model->alias]['find']);
 			unset($this->__backAttributes[$model->alias]['delete']);
 		}
+	}
+
+	/**
+	 * Trigger a callback through all attached behaviors, and model
+	 *
+	 * @param object $model Model
+	 * @param string $callback Callback
+	 * @param array $params Params
+	 * @param array $breakOnReturns If returned value is any of these values, break and return
+	 * @return mixed Return
+	 */
+	protected function _triggerCustomCallback($model, $callback, $params, $breakOnReturns = array()) {
+		$result = null;
+		$params = (array) $params;
+		$breakOnReturns = (array) $breakOnReturns;
+
+		foreach ($model->Behaviors->enabled() as $name) {
+			if (method_exists($model->Behaviors->{$name}, $callback)) {
+				$result = $model->Behaviors->{$name}->dispatchMethod($model, $callback, $params);
+				if (!empty($breakOnReturns) && in_array($result, $breakOnReturns, true)) {
+					return $result;
+				}
+			}
+		}
+
+		if (method_exists($model, $callback)) {
+			$result = $model->dispatchMethod($callback, $params);
+			if (in_array($result, $breakOnReturns, true)) {
+				return $result;
+			}
+		}
+
+		return $result;
 	}
 }
 ?>

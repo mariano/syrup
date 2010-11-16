@@ -27,6 +27,25 @@ class DeletableCategory extends SoftDeletableTestModel {
 	public $name = 'DeletableCategory';
 }
 
+class Test1Behavior extends ModelBehavior {
+	public function beforeSoftDeletable($model, $id) {
+		$model->callbacks[] = array('before', $id, 'test1');
+	}
+
+	public function afterSoftDeletable($model, $id) {
+		$model->callbacks[] = array('after', $id, 'test1');
+	}
+}
+
+class Test2Behavior extends ModelBehavior {
+}
+
+class Test3Behavior extends ModelBehavior {
+	public function afterSoftDeletable($model, $id) {
+		$model->callbacks[] = array('after', $id, 'test3');
+	}
+}
+
 class DeletableArticle extends SoftDeletableTestModel {
 	public $name = 'DeletableArticle';
 	public $belongsTo = array('DeletableCategory' => array('counterCache' => true));
@@ -630,6 +649,23 @@ class SoftDeletableTestCase extends CakeTestCase {
 		));
 		$expected = false;
 		$this->assertEqual($result, $expected);
+
+		$this->DeletableArticle->Behaviors->attach('Test1');
+		$this->DeletableArticle->Behaviors->attach('Test2');
+		$this->DeletableArticle->Behaviors->attach('Test3');
+
+		$this->DeletableArticle->callbacks = array();
+		$this->DeletableArticle->delete(2);
+
+		$result = $this->DeletableArticle->callbacks;
+		$expected = array(
+			array('before', 2, 'test1'),
+			array('before', 2),
+			array('after', 2, 'test1'),
+			array('after', 2, 'test3'),
+			array('after', 2)
+		);
+		$this->assertEqual($result, $expected);
 	}
 
 	public function testCounterCache() {
@@ -647,7 +683,7 @@ class SoftDeletableTestCase extends CakeTestCase {
 		$this->assertEqual($result, $expected);
 
 		$this->DeletableArticle->delete(1);
-		
+
 		$result = $this->DeletableArticle->find('first', array(
 			'conditions' => array('id' => 1, 'deleted' => 1),
 			'fields' => array('id', 'title'),
