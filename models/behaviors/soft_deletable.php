@@ -82,22 +82,8 @@ class SoftDeletableBehavior extends ModelBehavior {
 			return false;
 		}
 
-		/*
-		$model->Behaviors->dispatchMethod($model, 'beforeSoftDeletable', (array) $id);
-		if (method_exists($model, 'beforeSoftDeletable') && $model->beforeSoftDeletable($id) === false) {
-			return false;
-		}
-		*/
-
 		$model->id = $id;
 		$deleted = $model->save($data, false, array_keys($data[$model->alias]));
-
-		/*
-		$model->Behaviors->dispatchMethod($model, 'afterSoftDeletable', (array) $id);
-		if (method_exists($model, 'afterSoftDeletable')) {
-			$model->afterSoftDeletable($id);
-		}
-		*/
 
 		$this->_triggerCustomCallback($model, 'afterSoftDeletable', $id);
 
